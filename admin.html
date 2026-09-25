@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Admin - Workstations Activity Portal</title>
+    <style>
+        :root {
+            --font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+            --gutter: clamp(20px, 3vw, 40px);
+
+            --bg: #eef1f5;
+            --surface: #ffffff;
+            --surface-2: #f6f8fa;
+            --ink: #14212b;
+            --muted: #5a6a78;
+            --line: #dbe1e8;
+            --line-soft: #e9edf2;
+            --hover: #f6f9fb;
+
+            --topbar: #0f4c5c;
+            --brand: #0f4c5c;
+            --focus: #2563eb;
+            --danger: #d9534f;
+            --info: #17a2b8;
+
+            --active: #1f7a6a;
+            --active-soft: #dcefe9;
+            --active-ink: #135448;
+            --away: #d29a2e;
+            --away-soft: #fbf0d9;
+            --away-ink: #7a5410;
+            --idle-row: #fffaf0;
+            --off: #8a96a2;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0e161d;
+                --surface: #152029;
+                --surface-2: #192632;
+                --ink: #e6edf3;
+                --muted: #93a4b3;
+                --line: #243441;
+                --line-soft: #1e2d39;
+                --hover: #19262f;
+
+                --topbar: #11303a;
+                --brand: #23798c;
+                --focus: #6ea8ff;
+                --danger: #e06c75;
+                --info: #3bc9db;
+
+                --active: #3fb59f;
+                --active-soft: #16332e;
+                --active-ink: #7fd8c5;
+                --away: #e0ae4a;
+                --away-soft: #3a2f16;
+                --away-ink: #f0c774;
+                --idle-row: #1e2028;
+                --off: #6b7a88;
+            }
+        }
+
+        * { box-sizing: border-box; }
+        html { -webkit-text-size-adjust: 100%; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font: 15px/1.5 var(--font);
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--focus);
+            outline-offset: 2px;
+        }
+
+        .hidden { display: none !important; }
+
+        /* ---------- top bar ---------- */
+        .topbar { background: var(--topbar); color: #fff; width: 100%; }
+
+        .topbar-inner {
+            width: 100%;
+            margin: 0;
+            padding: 12px var(--gutter);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            min-width: 0;
+        }
+
+        .brand svg { width: 22px; height: 22px; flex: none; }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--brand);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn:hover { filter: brightness(1.12); }
+        .btn-danger { background: var(--danger); }
+        .btn-info { background: var(--info); }
+        .btn-secondary { background: var(--muted); }
+
+        /* ---------- page ---------- */
+        .page {
+            width: 100%;
+            margin: 0;
+            padding: 28px var(--gutter) 48px;
+            display: grid;
+            gap: 24px;
+        }
+
+        .page-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 14px;
+            background: var(--surface);
+            padding: 20px var(--gutter);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(1.4rem, 1.1rem + 1.4vw, 1.8rem);
+            line-height: 1.15;
+            font-weight: 650;
+            letter-spacing: -.01em;
+        }
+
+        .sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+        /* ---------- online / offline summary cards ---------- */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .summary-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 20px 24px;
+            border-left: 5px solid var(--active);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .summary-card.offline-card { border-left-color: var(--off); }
+
+        .summary-icon {
+            flex: none;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: var(--active-soft);
+            color: var(--active-ink);
+        }
+
+        .summary-card.offline-card .summary-icon { background: var(--line-soft); color: var(--muted); }
+        .summary-icon svg { width: 22px; height: 22px; }
+
+        .summary-label {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .03em;
+        }
+
+        .summary-count {
+            margin: 2px 0 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1.1;
+            font-variant-numeric: tabular-nums;
+            color: var(--ink);
+        }
+
+        @media (max-width: 560px) {
+            .summary-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ---------- panels & tables ---------- */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .panel-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--line-soft);
+            flex-wrap: wrap;
+        }
+
+        .panel-head h2 { margin: 0; font-size: 16px; font-weight: 650; }
+
+        .table-wrap { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; min-width: 750px; }
+
+        th, td {
+            padding: 14px 20px;
+            text-align: left;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--line-soft);
+            word-break: break-word;
+        }
+
+        th {
+            background: var(--surface-2);
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        tbody tr:last-child td { border-bottom: 0; }
+        tbody tr:hover { background: var(--hover); }
+        tr.is-idle { background: var(--idle-row); }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .badge-online { background: var(--active-soft); color: var(--active-ink); }
+        .badge-offline { background: var(--line-soft); color: var(--muted); }
+        .badge-active { background: var(--active-soft); color: var(--active-ink); }
+        .badge-idle { background: var(--away-soft); color: var(--away-ink); }
+
+        .time-badge {
+            font-family: monospace;
+            background: var(--surface-2);
+            border: 1px solid var(--line);
+            padding: 3px 6px;
+            border-radius: 4px;
+            color: var(--ink);
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            .page { padding: 16px var(--gutter); }
+            .topbar-inner { flex-direction: column; align-items: flex-start; }
+            .header-actions { width: 100%; justify-content: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="brand">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 12h4l2.5-6 4 12 2.5-6H21" />
+                </svg>
+                <span>Workstation Activity Portal (Admin)</span>
+            </div>
+            <div class="header-actions">
+                <span id="logged-user-label" style="font-size: 14px; color: rgba(255,255,255,0.9); margin-right: 8px;"></span>
+                <a href="/admin/adminuserlist" class="btn btn-info">👥 Manage Admins</a>
+                <a id="export-btn" href="/api/export" class="btn hidden">📥 Export CSV Logs</a>
+                <button onclick="logout()" class="btn btn-danger">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="page">
+        <div class="page-head">
+            <div>
+                <h1>Admin Activity Monitoring</h1>
+                <p class="sub"><span style="color: var(--active); font-weight: bold;">● Live Stream Active</span> &mdash; Real-time workstation telemetry and overview.</p>
+            </div>
+        </div>
+
+        <section class="panel" aria-labelledby="users-title">
+            <div class="panel-head">
+                <h2 id="users-title">Workstation status overview</h2>
+            </div>
+            <div style="padding: 20px;">
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <span class="summary-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 12h4l2.5-6 4 12 2.5-6H21" />
+                            </svg>
+                        </span>
+                        <div>
+                            <p class="summary-label">Live systems</p>
+                            <p class="summary-count" id="live-count">–</p>
+                        </div>
+                    </div>
+                    <div class="summary-card offline-card">
+                        <span class="summary-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="9" />
+                                <path d="M9 9l6 6M15 9l-6 6" />
+                            </svg>
+                        </span>
+                        <div>
+                            <p class="summary-label">Offline systems</p>
+                            <p class="summary-count" id="offline-count">–</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel" aria-labelledby="logs-title">
+            <div class="panel-head">
+                <h2 id="list-title" style="margin: 0;">All System List</h2>
+                <button id="back-btn" class="btn btn-secondary hidden" onclick="resetUserFilter()">← Back to All Systems</button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr id="table-header"></tr>
+                    </thead>
+                    <tbody id="system-table-body">
+                        <tr><td colspan="9" style="text-align: center; color: var(--muted);">Loading system list...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const token = localStorage.getItem('adminToken');
+        const isSuper = localStorage.getItem('isSuperAdmin') === 'true';
+        const username = localStorage.getItem('adminUsername');
+
+        if (!token) {
+            window.location.href = '/login';
+        } else {
+            document.getElementById('logged-user-label').innerText = `Logged in as: ${username} ${isSuper ? '(Super Admin)' : ''}`;
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('isSuperAdmin');
+            localStorage.removeItem('adminUsername');
+            window.location.href = '/login';
+        }
+
+        let selectedUser = null;
+
+        function formatDuration(sec) {
+            sec = Math.max(0, Math.round(sec));
+            const h = Math.floor(sec / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            const s = sec % 60;
+            if (h) return `${h}h ${m}m ${s}s`;
+            if (m) return `${m}m ${s}s`;
+            return `${s}s`;
+        }
+
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+
+        const isIdleApp = (app) => !!app && app.startsWith("Idle / Away");
+        const isOfflineApp = (app) => app === "Offline";
+
+        function parseState(appText, isOnline = true) {
+            if (!isOnline || isOfflineApp(appText)) return `<span class="badge badge-offline">Offline</span>`;
+            if (isIdleApp(appText)) return `<span class="badge badge-idle">⏱️ Away</span>`;
+            return `<span class="badge badge-active">🟢 Active</span>`;
+        }
+
+        // What to show in the "application" cell / card
+        function appLabel(app, fallback) {
+            if (!app) return fallback;
+            if (isIdleApp(app)) return '<i>No Activity</i>';
+            if (isOfflineApp(app)) return '<i>Agent disconnected</i>';
+            return esc(app);
+        }
+
+        async function loadUsers() {
+            const res = await fetch('/api/users');
+            const users = await res.json();
+            const liveCount = users.filter(u => u.is_online).length;
+            const offlineCount = users.length - liveCount;
+            document.getElementById("live-count").textContent = liveCount;
+            document.getElementById("offline-count").textContent = offlineCount;
+        }
+
+        async function loadSystemTable(user) {
+            const url = user ? `/api/logs?username=${encodeURIComponent(user)}` : '/api/users';
+            const res = await fetch(url);
+            const data = await res.json();
+            const body = document.getElementById("system-table-body");
+            const header = document.getElementById("table-header");
+            let html = '';
+
+            if (data.length === 0) {
+                body.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--muted);">No system records available.</td></tr>';
+                return;
+            }
+
+            if (user) {
+                // One row per change the agent reported; Time Spent = how long that state lasted
+                header.innerHTML = `<th>Started</th><th>System / User</th><th>User State</th><th>Active Application</th><th>Time Spent</th><th>CPU Usage</th><th>RAM Usage</th>`;
+                data.forEach(item => {
+                    const isIdle = isIdleApp(item.active_app);
+                    const isOff = isOfflineApp(item.active_app);
+                    html += `
+                        <tr class="${isIdle ? 'is-idle' : ''}">
+                            <td>${esc(item.timestamp)}</td>
+                            <td><b>💻 ${esc(item.user)}</b></td>
+                            <td>${parseState(item.active_app, true)}</td>
+                            <td>${appLabel(item.active_app, 'Desktop / System')}</td>
+                            <td>${isOff ? '–' : `<span class="time-badge">${formatDuration(item.duration)}</span>`}</td>
+                            <td>${isOff ? '–' : esc(item.cpu_usage) + '%'}</td>
+                            <td>${isOff ? '–' : esc(item.ram_usage) + '%'}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                header.innerHTML = `<th>Status</th><th>System / User</th><th>User State</th><th>Active Application</th><th>Time Spent</th><th>CPU Usage</th><th>RAM Usage</th><th>State Since</th><th>Action</th>`;
+                data.forEach(sys => {
+                    const isIdle = isIdleApp(sys.active_app);
+                    const showState = sys.is_online;
+                    html += `
+                        <tr class="${isIdle ? 'is-idle' : ''}">
+                            <td><span class="badge ${sys.is_online ? 'badge-online' : 'badge-offline'}">${sys.is_online ? 'ONLINE' : 'OFFLINE'}</span></td>
+                            <td><b>💻 ${esc(sys.user)}</b></td>
+                            <td>${parseState(sys.active_app, sys.is_online)}</td>
+                            <td>${showState ? appLabel(sys.active_app, 'None') : '<i>Agent disconnected</i>'}</td>
+                            <td>${showState ? `<span class="time-badge">${formatDuration(sys.duration)}</span>` : '–'}</td>
+                            <td>${esc(sys.cpu_usage)}%</td>
+                            <td>${esc(sys.ram_usage)}%</td>
+                            <td>${esc(sys.timestamp)}</td>
+                            <td><button class="btn" style="padding: 4px 10px; font-size: 12px;" data-user="${esc(sys.user)}" onclick="filterByUser(this.dataset.user)">View Activity</button></td>
+                        </tr>
+                    `;
+                });
+            }
+            body.innerHTML = html;
+        }
+
+        function filterByUser(user) {
+            selectedUser = user;
+            document.getElementById("list-title").innerText = `System Activity List: ${user}`;
+            document.getElementById("back-btn").classList.remove("hidden");
+            
+            const exportBtn = document.getElementById("export-btn");
+            exportBtn.href = `/api/export?username=${encodeURIComponent(user)}`;
+            exportBtn.classList.remove("hidden");
+            
+            loadSystemTable(user);
+        }
+
+        function resetUserFilter() {
+            selectedUser = null;
+            document.getElementById("list-title").innerText = "All System List";
+            document.getElementById("back-btn").classList.add("hidden");
+            
+            const exportBtn = document.getElementById("export-btn");
+            exportBtn.href = "/api/export";
+            exportBtn.classList.add("hidden");
+            
+            loadSystemTable(null);
+        }
+
+        loadUsers();
+        loadSystemTable(null);
+
+        const wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
+        let wsRetry = 0;
+
+        function connectWebSocket() {
+            const ws = new WebSocket(`${wsProto}://${window.location.host}/ws/dashboard`);
+            ws.onopen = () => { wsRetry = 0; };
+            ws.onmessage = (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (!selectedUser || data.user === selectedUser) {
+                        loadSystemTable(selectedUser);
+                    }
+                    if (!selectedUser) loadUsers();
+                } catch (err) { /* ignore malformed messages */ }
+            };
+            ws.onclose = () => setTimeout(connectWebSocket, Math.min(30000, 1000 * 2 ** wsRetry++));
+        }
+        connectWebSocket();
+
+        // Agents only report changes, so running timers are refreshed periodically
+        setInterval(() => {
+            if (document.hidden) return;
+            loadSystemTable(selectedUser);
+            if (!selectedUser) loadUsers();
+        }, 15000);
+    </script>
+</body>
+</html>

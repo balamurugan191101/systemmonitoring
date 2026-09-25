@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>My Workstation Activity</title>
+    <style>
+        :root {
+            --font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+            --gutter: clamp(20px, 3vw, 40px);
+
+            --bg: #eef1f5;
+            --surface: #ffffff;
+            --surface-2: #f6f8fa;
+            --ink: #14212b;
+            --muted: #5a6a78;
+            --line: #dbe1e8;
+            --line-soft: #e9edf2;
+            --hover: #f6f9fb;
+
+            --topbar: #0f4c5c;
+            --brand: #0f4c5c;
+            --focus: #2563eb;
+
+            --active: #1f7a6a;
+            --active-soft: #dcefe9;
+            --active-ink: #135448;
+            --away: #d29a2e;
+            --away-soft: #fbf0d9;
+            --away-ink: #7a5410;
+            --idle-row: #fffaf0;
+            --off: #8a96a2;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0e161d;
+                --surface: #152029;
+                --surface-2: #192632;
+                --ink: #e6edf3;
+                --muted: #93a4b3;
+                --line: #243441;
+                --line-soft: #1e2d39;
+                --hover: #19262f;
+
+                --topbar: #11303a;
+                --brand: #23798c;
+                --focus: #6ea8ff;
+
+                --active: #3fb59f;
+                --active-soft: #16332e;
+                --active-ink: #7fd8c5;
+                --away: #e0ae4a;
+                --away-soft: #3a2f16;
+                --away-ink: #f0c774;
+                --idle-row: #1e2028;
+                --off: #6b7a88;
+            }
+        }
+
+        * { box-sizing: border-box; }
+        html { -webkit-text-size-adjust: 100%; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font: 15px/1.5 var(--font);
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--focus);
+            outline-offset: 2px;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+        }
+
+        /* ---------- top bar ---------- */
+        .topbar { background: var(--topbar); color: #fff; width: 100%; }
+
+        .topbar-inner {
+            width: 100%;
+            margin: 0;
+            padding: 12px var(--gutter);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            min-width: 0;
+        }
+
+        .brand svg { width: 22px; height: 22px; flex: none; }
+
+        .system-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            font-size: 14px;
+            color: rgba(255, 255, 255, .92);
+        }
+
+        .system-icon {
+            flex: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .16);
+            display: grid;
+            place-items: center;
+        }
+
+        .system-icon svg { width: 16px; height: 16px; }
+
+        .system-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 320px;
+        }
+
+        /* ---------- page ---------- */
+        .page {
+            width: 100%;
+            margin: 0;
+            padding: 28px var(--gutter) 48px;
+            display: grid;
+            gap: 20px;
+        }
+
+        .page-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2rem);
+            line-height: 1.15;
+            font-weight: 650;
+            letter-spacing: -.01em;
+        }
+
+        .sub { margin: 6px 0 0; color: var(--muted); }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--brand);
+            color: #fff;
+            padding: 9px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .btn:hover { filter: brightness(1.12); }
+        .btn svg { width: 16px; height: 16px; }
+
+        /* ---------- summary ---------- */
+        .summary {
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 1px;
+            background: var(--line);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .metric { background: var(--surface); padding: 18px 20px; min-width: 0; }
+        .metric dt { color: var(--muted); font-size: 13px; }
+        .metric dd { margin: 4px 0 0; min-width: 0; }
+
+        .metric-value {
+            font-size: 1.6rem;
+            font-weight: 650;
+            line-height: 1.25;
+            letter-spacing: -.01em;
+            font-variant-numeric: tabular-nums;
+            overflow-wrap: anywhere;
+        }
+
+        .metric-detail {
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin-right: 8px;
+            border-radius: 50%;
+            background: var(--off);
+            vertical-align: 2px;
+        }
+
+        .dot.active { background: var(--active); box-shadow: 0 0 0 4px var(--active-soft); }
+        .dot.idle { background: var(--away); }
+
+        /* ---------- panels ---------- */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .panel-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--line-soft);
+        }
+
+        .panel-head h2 { margin: 0; font-size: 16px; font-weight: 650; }
+        .panel-note { color: var(--muted); font-size: 13px; text-align: right; }
+
+        /* ---------- timeline ---------- */
+        .timeline { padding: 20px; }
+
+        .tl-bar {
+            position: relative;
+            height: 36px;
+            border-radius: 6px;
+            background: var(--line-soft);
+            overflow: hidden;
+        }
+
+        .seg { position: absolute; top: 0; bottom: 0; border-right: 1px solid var(--surface); }
+        .seg-active { background: var(--active); }
+        .seg-idle { background: var(--away); }
+
+        .tl-axis {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 12px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 18px;
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .swatch {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-right: 6px;
+            border-radius: 3px;
+            vertical-align: -1px;
+        }
+
+        .swatch.active { background: var(--active); }
+        .swatch.idle { background: var(--away); }
+        .swatch.gap { background: var(--line-soft); box-shadow: inset 0 0 0 1px var(--line); }
+
+        .empty { padding: 8px 0; color: var(--muted); }
+
+        /* ---------- log table ---------- */
+        .table-wrap { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        th, td {
+            padding: 12px 20px;
+            text-align: left;
+            vertical-align: top;
+            border-bottom: 1px solid var(--line-soft);
+        }
+
+        th {
+            background: var(--surface-2);
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        tbody tr:last-child td { border-bottom: 0; }
+        tbody tr.entry:hover { background: var(--hover); }
+        tr.is-idle { background: var(--idle-row); }
+
+        td.started, td.state, td.host { white-space: nowrap; }
+        td.app { overflow-wrap: anywhere; min-width: 220px; font-weight: 500; }
+        td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .muted { color: var(--muted); font-weight: 400; }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .badge-active { background: var(--active-soft); color: var(--active-ink); }
+        .badge-idle { background: var(--away-soft); color: var(--away-ink); }
+
+        .live { margin-left: 8px; color: var(--active-ink); font-size: 12px; font-weight: 600; }
+
+        .state-row td { padding: 32px 20px; text-align: center; color: var(--muted); }
+
+        /* ---------- tablet ---------- */
+        @media (max-width: 900px) {
+            .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        /* ---------- phone: table rows become cards ---------- */
+        @media (max-width: 760px) {
+            .page { padding-top: 20px; gap: 16px; }
+            .btn { width: 100%; }
+
+            .log-table thead {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip: rect(0 0 0 0);
+            }
+
+            .log-table, .log-table tbody { display: block; }
+
+            .log-table tr.entry {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px 16px;
+                padding: 14px 16px;
+                border-bottom: 1px solid var(--line-soft);
+            }
+
+            .log-table tbody tr.entry:last-child { border-bottom: 0; }
+
+            .log-table tr.entry td {
+                display: block;
+                padding: 0;
+                border: 0;
+                text-align: left;
+                min-width: 0;
+            }
+
+            .log-table tr.entry td::before {
+                content: attr(data-label);
+                display: block;
+                margin-bottom: 1px;
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 400;
+            }
+
+            .log-table td.state { grid-column: 1 / -1; order: -3; }
+            .log-table td.app { grid-column: 1 / -1; order: -2; }
+            .log-table td.host { grid-column: 1 / -1; order: -1; white-space: normal; overflow-wrap: anywhere; }
+            .log-table td.state::before, .log-table td.app::before { display: none; }
+            .log-table td.num { text-align: left; }
+
+            .log-table tr.state-row, .log-table tr.state-row td { display: block; }
+        }
+
+        @media (max-width: 520px) {
+            .metric { padding: 14px 16px; }
+            .metric-value { font-size: 1.3rem; }
+            .panel-head { padding: 14px 16px; }
+            .timeline { padding: 16px; }
+            .system-name { max-width: 180px; }
+            .tl-axis span:nth-child(2), .tl-axis span:nth-child(4) { display: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="brand">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 12h4l2.5-6 4 12 2.5-6H21" />
+                </svg>
+                <span>Workstation Activity</span>
+            </div>
+            <div class="system-chip" id="system-chip">
+                <span class="system-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="12" rx="2" />
+                        <path d="M8 20h8M12 16v4" />
+                    </svg>
+                </span>
+                <span class="system-name" id="system-display">Detecting system...</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="page">
+        <div class="page-head">
+            <div>
+                <h1>My activity</h1>
+                <p class="sub">The applications you use on this computer and how long you spend in each.</p>
+            </div>
+            <a id="export-btn" href="#" class="btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 3v12M7 10l5 5 5-5M4 20h16" />
+                </svg>
+                Export CSV
+            </a>
+        </div>
+
+        <dl class="summary" aria-label="Today at a glance">
+            <div class="metric">
+                <dt>Right now</dt>
+                <dd>
+                    <div class="metric-value" id="sum-now"><span class="dot"></span>Waiting</div>
+                    <div class="metric-detail" id="sum-now-detail">Waiting for the agent</div>
+                </dd>
+            </div>
+            <div class="metric">
+                <dt>Active today</dt>
+                <dd>
+                    <div class="metric-value" id="sum-active">0s</div>
+                    <div class="metric-detail">Time at the keyboard or mouse</div>
+                </dd>
+            </div>
+            <div class="metric">
+                <dt>Away today</dt>
+                <dd>
+                    <div class="metric-value" id="sum-away">0s</div>
+                    <div class="metric-detail">No keyboard or mouse input</div>
+                </dd>
+            </div>
+            <div class="metric">
+                <dt>Longest stretch today</dt>
+                <dd>
+                    <div class="metric-value" id="sum-longest">0s</div>
+                    <div class="metric-detail" id="sum-longest-detail">No activity yet today</div>
+                </dd>
+            </div>
+        </dl>
+
+        <section class="panel" aria-labelledby="tl-title">
+            <div class="panel-head">
+                <h2 id="tl-title">Today's timeline</h2>
+                <span class="panel-note" id="tl-range"></span>
+            </div>
+            <div class="timeline">
+                <div id="tl-empty" class="empty">Nothing recorded yet today.</div>
+                <div id="tl-body" hidden>
+                    <div class="tl-bar" id="tl-bar" role="img"></div>
+                    <div class="tl-axis" id="tl-axis" aria-hidden="true"></div>
+                    <div class="legend" aria-hidden="true">
+                        <span><span class="swatch active"></span>Active</span>
+                        <span><span class="swatch idle"></span>Away</span>
+                        <span><span class="swatch gap"></span>Not recorded</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel" aria-labelledby="log-title">
+            <div class="panel-head">
+                <h2 id="log-title">Activity log</h2>
+                <span class="panel-note" id="log-count"></span>
+            </div>
+            <div class="table-wrap">
+                <table class="log-table">
+                    <caption class="sr-only">Applications used, newest first</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Started</th>
+                            <th scope="col">System name</th>
+                            <th scope="col">User state</th>
+                            <th scope="col">Active application</th>
+                            <th scope="col" class="num">Time spent</th>
+                            <th scope="col" class="num">CPU</th>
+                            <th scope="col" class="num">RAM</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-logs-body">
+                        <tr class="state-row">
+                            <td colspan="7">Loading your activity...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+
+        let currentUser = "";
+        let cachedLogs = [];
+        let logsLoaded = false;
+        let renderedCount = -1;
+        let wsRetry = 0;
+
+        let systemName = "";
+        let systemFromUrl = false;
+
+        const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+
+        const cleanText = (v) => (typeof v === 'string' && v.trim()) ? v.trim() : '';
+
+        function formatDuration(sec) {
+            sec = Math.max(0, Math.round(sec));
+            const h = Math.floor(sec / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            const s = sec % 60;
+            if (h) return `${h}h ${m}m ${s}s`;
+            if (m) return `${m}m ${s}s`;
+            return `${s}s`;
+        }
+
+        const clockOpts = { hour: 'numeric', minute: '2-digit' };
+        const formatClock = (ms) => new Date(ms).toLocaleTimeString([], clockOpts);
+
+        function formatStart(ms) {
+            const d = new Date(ms);
+            if (d.toDateString() === new Date().toDateString()) return formatClock(ms);
+            return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ', ' + formatClock(ms);
+        }
+
+        const isIdleTitle = (t) => !!t && t.startsWith("Idle / Away");
+        const idleSecs = (t) => {
+            const m = /\((\d+)s\)/.exec(t || "");
+            return m ? Number(m[1]) : 0;
+        };
+
+        function latestHostname(logs) {
+            let best = '', bestT = -Infinity;
+            logs.forEach(l => {
+                // Check system_name, full_system_id, or hostname property
+                const h = cleanText(l.system_name || l.full_system_id || l.hostname);
+                if (!h) return;
+                const t = new Date(l.timestamp.replace(' ', 'T')).getTime();
+                if (t >= bestT) { best = h; bestT = t; }
+            });
+            return best;
+        }
+
+        function renderSystemName() {
+            const fallback = currentUser && currentUser !== 'Unknown' ? currentUser : 'Unknown system';
+            const name = systemName || fallback;
+            $('system-display').textContent = name;
+            $('system-chip').title = `System name: ${name}`;
+            document.title = `My activity: ${name}`;
+        }
+
+        function buildSessions(logs, now) {
+            const ev = logs
+                .map(l => ({ ...l, t: new Date(l.timestamp.replace(' ', 'T')).getTime() }))
+                .sort((a, b) => a.t - b.t);
+
+            ev.forEach((e, i) => {
+                e.kind = e.active_app === "Offline" ? "offline"
+                    : isIdleTitle(e.active_app) ? "idle" : "active";
+                e.start = e.kind === "idle" ? e.t - idleSecs(e.active_app) * 1000 : e.t;
+                if (i > 0) e.start = Math.max(e.start, ev[i - 1].start);
+            });
+
+            const rows = [];
+            let open = null;
+            let idle = null;
+
+            ev.forEach((e, i) => {
+                const isLast = i === ev.length - 1;
+                const end = isLast ? now : ev[i + 1].start;
+                const secs = Math.max(0, (end - e.start) / 1000);
+                const host = cleanText(e.system_name || e.full_system_id || e.hostname);
+
+                if (e.kind === "offline") { open = null; idle = null; return; }
+
+                if (e.kind === "idle") {
+                    if (!idle) {
+                        idle = { kind: "idle", start: e.start, host };
+                        rows.push(idle);
+                    }
+                    idle.end = end;
+                    idle.secs = (idle.end - idle.start) / 1000;
+                    idle.live = isLast;
+                    return;
+                }
+
+                idle = null;
+                if (!open || open.title !== e.active_app) {
+                    open = {
+                        kind: "active", title: e.active_app, start: e.start, secs: 0, segs: [],
+                        cpu: e.cpu_usage, ram: e.ram_usage, host
+                    };
+                    rows.push(open);
+                }
+                const lastSeg = open.segs[open.segs.length - 1];
+                if (lastSeg && Math.abs(lastSeg.end - e.start) < 1) lastSeg.end = end;
+                else open.segs.push({ start: e.start, end });
+
+                open.secs += secs;
+                open.end = end;
+                open.live = isLast;
+            });
+
+            const lastEv = ev[ev.length - 1];
+            const current = lastEv ? { kind: lastEv.kind, title: lastEv.active_app } : null;
+
+            rows.sort((a, b) => b.end - a.end);
+            return { rows, current };
+        }
+
+        function todayStats(rows, now) {
+            const d0 = new Date(now);
+            d0.setHours(0, 0, 0, 0);
+            const dayStart = d0.getTime();
+            const clip = (s) => {
+                const a = Math.max(s.start, dayStart), b = Math.min(s.end, now);
+                return b > a ? { start: a, end: b } : null;
+            };
+
+            let active = 0, away = 0;
+            let longest = { secs: 0, title: '' };
+            const segs = [];
+
+            rows.forEach(r => {
+                if (r.kind === "idle") {
+                    const c = clip(r);
+                    if (c) { away += (c.end - c.start) / 1000; segs.push({ kind: 'idle', ...c }); }
+                    return;
+                }
+                let rowSecs = 0;
+                r.segs.forEach(s => {
+                    const c = clip(s);
+                    if (c) {
+                        rowSecs += (c.end - c.start) / 1000;
+                        segs.push({ kind: 'active', title: r.title, ...c });
+                    }
+                });
+                active += rowSecs;
+                if (rowSecs > longest.secs) longest = { secs: rowSecs, title: r.title };
+            });
+
+            return { active, away, longest, segs };
+        }
+
+        function renderSummary(stats, current) {
+            const states = {
+                active: ['active', 'Active', current && current.title],
+                idle: ['idle', 'Away', 'No keyboard or mouse input'],
+                offline: ['', 'Offline', 'The agent is not connected']
+            };
+            const st = current ? states[current.kind] : ['', 'Waiting', 'Waiting for the agent'];
+            $('sum-now').innerHTML = `<span class="dot ${st[0]}"></span>${st[1]}`;
+            $('sum-now-detail').textContent = st[2] || '';$('sum-now-detail').title = st[2] || '';
+
+            $('sum-active').textContent = formatDuration(stats.active);
+            $('sum-away').textContent = formatDuration(stats.away);$('sum-longest').textContent = stats.longest.secs ? formatDuration(stats.longest.secs) : '0s';
+            $('sum-longest-detail').textContent = stats.longest.title || 'No activity yet today';$('sum-longest-detail').title = stats.longest.title || '';
+        }
+
+        function renderTimeline(stats) {
+            const segs = stats.segs;
+            $('tl-empty').hidden = segs.length > 0;
+            $('tl-body').hidden = segs.length === 0;
+            if (!segs.length) { $('tl-range').textContent = ''; return; }
+
+            const min = Math.min(...segs.map(s => s.start));
+            const max = Math.max(...segs.map(s => s.end));
+            const span = Math.max(max - min, 1);
+
+            $('tl-range').textContent = `${formatClock(min)} to ${formatClock(max)}`;
+            $('tl-bar').setAttribute('aria-label',
+                `Today's timeline: ${formatDuration(stats.active)} active, ${formatDuration(stats.away)} away`);
+
+            $('tl-bar').innerHTML = segs.map(s => {
+                const left = (s.start - min) / span * 100;
+                const width = Math.max((s.end - s.start) / span * 100, 0.4);
+                const label = s.kind === 'idle' ? 'Away' : s.title;
+                return `<span class="seg seg-${s.kind}" style="left:${left}%;width:${width}%" ` +
+                    `title="${escapeHtml(label)}: ${formatDuration((s.end - s.start) / 1000)}"></span>`;
+            }).join('');
+
+            $('tl-axis').innerHTML = [0, .25, .5, .75, 1]
+                .map(f => `<span>${formatClock(min + span * f)}</span>`).join('');
+        }
+
+        const stateRow = (msg) => `<tr class="state-row"><td colspan="7">${msg}</td></tr>`;
+
+        function rowHtml(s, i) {
+            const isIdle = s.kind === "idle";
+            const badge = isIdle
+                ? '<span class="badge badge-idle">Away</span>'
+                : '<span class="badge badge-active">Active</span>';
+            const app = isIdle
+                ? '<span class="muted">Away: no keyboard or mouse activity</span>'
+                : escapeHtml(s.title);
+            const live = s.live ? '<span class="live">Live</span>' : '';
+            const host = s.host || systemName || '–';
+
+            return `
+                <tr class="entry${isIdle ? ' is-idle' : ''}">
+                    <td class="started" data-label="Started">${escapeHtml(formatStart(s.start))}</td>
+                    <td class="host" data-label="System name">${escapeHtml(host)}</td>
+                    <td class="state" data-label="User state">${badge}</td>
+                    <td class="app" data-label="Active application">${app}</td>
+                    <td class="num" data-label="Time spent"><span id="dur-${i}">${formatDuration(s.secs)}</span>${live}</td>
+                    <td class="num" data-label="CPU">${isIdle ? '–' : escapeHtml(s.cpu ?? '–') + '%'}</td>
+                    <td class="num" data-label="RAM">${isIdle ? '–' : escapeHtml(s.ram ?? '–') + '%'}</td>
+                </tr>`;
+        }
+
+        function renderTable(rows) {
+            renderedCount = rows.length;
+            $('log-count').textContent = rows.length === 1 ? '1 entry' : `${rows.length} entries`;
+
+            if (!rows.length) {
+                $('user-logs-body').innerHTML = stateRow(
+                    'No activity recorded yet. Entries appear here once the agent is running on this computer.');
+                return;
+            }
+            $('user-logs-body').innerHTML = rows.map(rowHtml).join('');
+        }
+
+        function refresh(full) {
+            if (!logsLoaded) return;
+            const now = Date.now();
+            const { rows, current } = buildSessions(cachedLogs, now);
+            const stats = todayStats(rows, now);
+
+            renderSummary(stats, current);
+            renderTimeline(stats);
+
+            if (full || rows.length !== renderedCount) {
+                renderTable(rows);
+            } else {
+                rows.forEach((s, i) => {
+                    if (!s.live) return;
+                    const el = $(`dur-${i}`);
+                    if (el) el.textContent = formatDuration(s.secs);
+                });
+            }
+        }
+
+        async function loadMyLogs() {
+            if (!currentUser) return;
+            try {
+                const res = await fetch(`/api/logs?username=${encodeURIComponent(currentUser)}&limit=5000`);
+                if (!res.ok) throw new Error(res.status);
+                cachedLogs = await res.json();
+                logsLoaded = true;
+
+                if (!systemFromUrl) {
+                    const fromLogs = latestHostname(cachedLogs);
+                    if (fromLogs) systemName = fromLogs;
+                }
+                renderSystemName();
+                refresh(true);
+            } catch (err) {
+                if (!logsLoaded) {
+                    $('user-logs-body').innerHTML = stateRow(
+                        "We couldn't load your activity. Check that the server is running. This page retries automatically.");
+                }
+            }
+        }
+
+        function connectWebSocket() {
+            const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+            const ws = new WebSocket(`${proto}://${location.host}/ws/dashboard`);
+
+            ws.onopen = () => {
+                if (wsRetry > 0) loadMyLogs();
+                wsRetry = 0;
+            };
+            ws.onmessage = (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.user === currentUser) loadMyLogs();
+                } catch (err) { }
+            };
+            ws.onclose = () => {
+                setTimeout(connectWebSocket, Math.min(30000, 1000 * 2 ** wsRetry++));
+            };
+        }
+
+        async function initUserDashboard() {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentUser = urlParams.get('username');
+
+            systemName = cleanText(urlParams.get('system'));
+            systemFromUrl = !!systemName;
+
+            if (!currentUser) {
+                try {
+                    const res = await fetch('/api/me');
+                    const data = await res.json();
+                    currentUser = data.username;
+                } catch (err) {
+                    currentUser = "Unknown";
+                }
+            }
+
+            renderSystemName();
+            $("export-btn").href = `/api/export?username=${encodeURIComponent(currentUser)}`;
+
+            loadMyLogs();
+            connectWebSocket();
+        }
+
+        setInterval(() => { if (!document.hidden) refresh(false); }, 1000);
+        setInterval(loadMyLogs, 60000);
+
+        initUserDashboard();
+    </script>
+</body>
+
+</html>

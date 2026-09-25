@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Admin Users - Workstations Activity Portal</title>
+    <style>
+        :root {
+            --font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+            --gutter: clamp(20px, 3vw, 40px);
+
+            --bg: #eef1f5;
+            --surface: #ffffff;
+            --surface-2: #f6f8fa;
+            --ink: #14212b;
+            --muted: #5a6a78;
+            --line: #dbe1e8;
+            --line-soft: #e9edf2;
+            --hover: #f6f9fb;
+
+            --topbar: #0f4c5c;
+            --brand: #0f4c5c;
+            --focus: #2563eb;
+            --danger: #d9534f;
+            --info: #17a2b8;
+
+            --active: #1f7a6a;
+            --active-soft: #dcefe9;
+            --active-ink: #135448;
+            --away: #d29a2e;
+            --away-soft: #fbf0d9;
+            --away-ink: #7a5410;
+            --off: #8a96a2;
+            --error-ink: #b42318;
+            --error-soft: #fdecea;
+            --backdrop: rgba(10, 20, 28, .55);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0e161d;
+                --surface: #152029;
+                --surface-2: #192632;
+                --ink: #e6edf3;
+                --muted: #93a4b3;
+                --line: #243441;
+                --line-soft: #1e2d39;
+                --hover: #19262f;
+
+                --topbar: #11303a;
+                --brand: #23798c;
+                --focus: #6ea8ff;
+                --danger: #e06c75;
+                --info: #3bc9db;
+
+                --active: #3fb59f;
+                --active-soft: #16332e;
+                --active-ink: #7fd8c5;
+                --away: #e0ae4a;
+                --away-soft: #3a2f16;
+                --away-ink: #f0c774;
+                --off: #6b7a88;
+                --error-ink: #f4a5a0;
+                --error-soft: #3a1f1e;
+                --backdrop: rgba(0, 0, 0, .65);
+            }
+        }
+
+        * { box-sizing: border-box; }
+        html { -webkit-text-size-adjust: 100%; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font: 15px/1.5 var(--font);
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--focus);
+            outline-offset: 2px;
+        }
+
+        .hidden { display: none !important; }
+
+        /* ---------- top bar ---------- */
+        .topbar { background: var(--topbar); color: #fff; width: 100%; }
+
+        .topbar-inner {
+            width: 100%;
+            padding: 12px var(--gutter);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            min-width: 0;
+        }
+
+        .brand svg { width: 22px; height: 22px; flex: none; }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .logged-in { font-size: 14px; color: rgba(255, 255, 255, .9); margin-right: 8px; }
+
+        /* ---------- buttons ---------- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--brand);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font: inherit;
+            font-weight: 600;
+            font-size: 14px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn:hover { filter: brightness(1.12); }
+        .btn:disabled { opacity: .6; cursor: not-allowed; filter: none; }
+        .btn-danger { background: var(--danger); }
+        .btn-success { background: var(--active); }
+        .btn-warning { background: var(--away); color: #1f1600; }
+        .btn-ghost { background: rgba(255, 255, 255, .16); }
+        .btn-outline { background: transparent; color: var(--ink); border-color: var(--line); }
+        .btn-sm { padding: 5px 12px; font-size: 13px; }
+
+        /* ---------- page ---------- */
+        .page {
+            width: 100%;
+            padding: 28px var(--gutter) 48px;
+            display: grid;
+            gap: 24px;
+        }
+
+        .page-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            background: var(--surface);
+            padding: 20px var(--gutter);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(1.4rem, 1.1rem + 1.4vw, 1.8rem);
+            line-height: 1.15;
+            font-weight: 650;
+            letter-spacing: -.01em;
+        }
+
+        .sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+        /* ---------- panel & table ---------- */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .panel-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--line-soft);
+            flex-wrap: wrap;
+        }
+
+        .panel-head h2 { margin: 0; font-size: 16px; font-weight: 650; }
+        .panel-note { color: var(--muted); font-size: 13px; }
+
+        .table-wrap { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        th, td {
+            padding: 14px 20px;
+            text-align: left;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--line-soft);
+            overflow-wrap: anywhere;
+        }
+
+        th {
+            background: var(--surface-2);
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        tbody tr:last-child td { border-bottom: 0; }
+        tbody tr.entry:hover { background: var(--hover); }
+        td.actions { white-space: nowrap; }
+
+        .muted { color: var(--muted); font-weight: 400; }
+        .state-row td { padding: 32px 20px; text-align: center; color: var(--muted); }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            margin-left: 6px;
+        }
+
+        .badge::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .badge-super { background: var(--active-soft); color: var(--active-ink); }
+
+        .pw-mask {
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 13px;
+            background: var(--surface-2);
+            border: 1px solid var(--line);
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        /* ---------- dialogs ---------- */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: var(--backdrop);
+        }
+
+        .overlay[hidden] { display: none; }
+
+        .dialog {
+            width: 100%;
+            max-width: 440px;
+            max-height: 100%;
+            overflow-y: auto;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .dialog h3 { margin: 0 0 6px; font-size: 18px; font-weight: 650; }
+        .dialog p { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+        .dialog p strong { color: var(--ink); }
+
+        .field { margin-bottom: 14px; }
+        .field label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; }
+
+        .field input[type="text"],
+        .field input[type="email"],
+        .field input[type="password"] {
+            width: 100%;
+            padding: 9px 12px;
+            font: inherit;
+            color: var(--ink);
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+        }
+
+        .field input:focus-visible { outline-offset: 0; border-color: var(--focus); }
+
+        .check { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 4px; }
+
+        .dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .link-row { display: flex; gap: 8px; }
+        .link-row input {
+            flex: 1;
+            min-width: 0;
+            padding: 9px 12px;
+            font: 13px Consolas, "Courier New", monospace;
+            color: var(--ink);
+            background: var(--surface-2);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+        }
+
+        .msg { margin-top: 12px; font-size: 13px; min-height: 18px; }
+        .msg.ok { color: var(--active-ink); }
+        .msg.err { color: var(--error-ink); }
+
+        .notice {
+            margin-top: 14px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: var(--away-soft);
+            color: var(--away-ink);
+            font-size: 13px;
+        }
+
+        /* ---------- phone: table rows become cards ---------- */
+        @media (max-width: 720px) {
+            .page { padding: 16px var(--gutter); gap: 16px; }
+            .topbar-inner { flex-direction: column; align-items: flex-start; }
+            .header-actions { width: 100%; }
+            .page-head .btn { width: 100%; }
+
+            .admin-table thead {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip: rect(0 0 0 0);
+            }
+
+            .admin-table, .admin-table tbody { display: block; }
+
+            .admin-table tr.entry {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px 16px;
+                padding: 14px 16px;
+                border-bottom: 1px solid var(--line-soft);
+            }
+
+            .admin-table tbody tr.entry:last-child { border-bottom: 0; }
+
+            .admin-table tr.entry td {
+                display: block;
+                padding: 0;
+                border: 0;
+                min-width: 0;
+            }
+
+            .admin-table tr.entry td::before {
+                content: attr(data-label);
+                display: block;
+                margin-bottom: 1px;
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 400;
+            }
+
+            .admin-table td.who { grid-column: 1 / -1; order: -3; }
+            .admin-table tr.entry td.who::before { display: none; }
+            .admin-table td.mail { grid-column: 1 / -1; order: -2; }
+            .admin-table td.pw { grid-column: 1 / -1; order: -1; }
+            .admin-table td.actions { grid-column: 1 / -1; }
+            .admin-table td.actions .btn { width: 100%; }
+
+            .admin-table tr.state-row, .admin-table tr.state-row td { display: block; }
+            .dialog { padding: 20px; }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="brand">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 12h4l2.5-6 4 12 2.5-6H21" />
+                </svg>
+                <span>Workstation Activity Portal (Admin)</span>
+            </div>
+            <div class="header-actions">
+                <span id="logged-user-label" class="logged-in"></span>
+                <a href="/admin" class="btn btn-ghost">&larr; Back to Dashboard</a>
+                <button type="button" class="btn btn-danger" id="logout-btn">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="page">
+        <div class="page-head">
+            <div>
+                <h1>Admin users</h1>
+                <p class="sub">Manage portal administrator accounts and password resets.</p>
+            </div>
+            <button type="button" id="open-create-btn" class="btn btn-success hidden">+ Create New Admin</button>
+        </div>
+
+        <section class="panel" aria-labelledby="accounts-title">
+            <div class="panel-head">
+                <h2 id="accounts-title">Administrator accounts</h2>
+                <span class="panel-note" id="admin-count"></span>
+            </div>
+            <div class="table-wrap">
+                <table class="admin-table">
+                    <caption class="hidden">Administrator accounts</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">S. No.</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Password status</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-tbody">
+                        <tr class="state-row">
+                            <td colspan="5">Loading admin accounts...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Create admin -->
+    <div id="create-overlay" class="overlay" hidden>
+        <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="create-title">
+            <h3 id="create-title">Create new admin</h3>
+            <p>The new admin can sign in with these details straight away.</p>
+            <form id="create-form" autocomplete="off">
+                <div class="field">
+                    <label for="newUsername">Username</label>
+                    <input type="text" id="newUsername" required>
+                </div>
+                <div class="field">
+                    <label for="newEmail">Email address</label>
+                    <input type="email" id="newEmail" required placeholder="admin@example.com">
+                </div>
+                <div class="field">
+                    <label for="newPassword">Password</label>
+                    <input type="password" id="newPassword" autocomplete="new-password" minlength="8" required>
+                </div>
+                <label class="check"><input type="checkbox" id="makeSuper"> Super Admin</label>
+                <div id="create-msg" class="msg" role="status"></div>
+                <div class="dialog-actions">
+                    <button type="button" class="btn btn-outline" id="create-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="create-submit">Create user</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reset password -->
+    <div id="reset-overlay" class="overlay" hidden>
+        <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="reset-title">
+            <h3 id="reset-title">Reset password</h3>
+
+            <div id="reset-step-confirm">
+                <p>Create a one-time reset link for <strong id="reset-user"></strong>? The link opens a page where
+                    they choose a new password. It works once and expires in 30 minutes.</p>
+                <div id="reset-msg" class="msg err" role="status"></div>
+                <div class="dialog-actions">
+                    <button type="button" class="btn btn-outline" id="reset-cancel">Cancel</button>
+                    <button type="button" class="btn btn-warning" id="reset-generate">Generate link</button>
+                </div>
+            </div>
+
+            <div id="reset-step-link" class="hidden">
+                <p>Send this link to <strong id="reset-user-2"></strong>. It expires in <span id="reset-minutes">30</span>
+                    minutes and stops working after it is used.</p>
+                <div class="link-row">
+                    <input type="text" id="reset-link" readonly aria-label="Password reset link">
+                    <button type="button" class="btn btn-success" id="reset-copy">Copy</button>
+                </div>
+                <div id="copy-msg" class="msg ok" role="status"></div>
+                <div class="notice">Anyone with this link can set a new password for this account, so share it privately.</div>
+                <div class="dialog-actions">
+                    <a id="reset-open" class="btn btn-outline" href="#" target="_blank" rel="noopener">Open reset page</a>
+                    <button type="button" class="btn" id="reset-done">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const token = localStorage.getItem('adminToken');
+        const isSuper = localStorage.getItem('isSuperAdmin') === 'true';
+        const myName = localStorage.getItem('adminUsername') || '';
+
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+
+        function signOut() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('isSuperAdmin');
+            localStorage.removeItem('adminUsername');
+            window.location.href = '/login';
+        }
+
+        // ---------- dialogs ----------
+        function showOverlay(id, focusId) {
+            $(id).hidden = false;
+            if (focusId) $(focusId).focus();
+        }
+        function hideOverlay(id) { $(id).hidden = true; }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            closeCreate();
+            hideOverlay('reset-overlay');
+        });
+        ['create-overlay', 'reset-overlay'].forEach(id => {
+            $(id).addEventListener('mousedown', (e) => { if (e.target === $(id)) hideOverlay(id); });
+        });
+
+        // ---------- create admin ----------
+        function closeCreate() {
+            hideOverlay('create-overlay');
+            $('create-form').reset();
+            $('create-msg').textContent = '';
+        }
+
+        async function createNewAdmin(event) {
+            event.preventDefault();
+            const msg = $('create-msg');
+            const submit = $('create-submit');
+            submit.disabled = true;
+            msg.className = 'msg';
+            msg.textContent = '';
+
+            try {
+                const res = await fetch('/api/admin/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token,
+                        new_username: $('newUsername').value,
+                        new_email: $('newEmail').value,
+                        new_password: $('newPassword').value,
+                        is_super_admin: $('makeSuper').checked
+                    })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    msg.className = 'msg ok';
+                    msg.textContent = data.message;
+                    setTimeout(() => { closeCreate(); fetchAdminUsers(); }, 900);
+                } else {
+                    msg.className = 'msg err';
+                    msg.textContent = data.message || 'Failed to create admin.';
+                }
+            } catch (err) {
+                msg.className = 'msg err';
+                msg.textContent = 'Could not reach the server.';
+            } finally {
+                submit.disabled = false;
+            }
+        }
+
+        // ---------- account list ----------
+        async function fetchAdminUsers() {
+            const body = $('admin-tbody');
+            try {
+                const res = await fetch(`/api/admin/list?token=${encodeURIComponent(token)}`);
+                if (res.status === 401) {
+                    alert('Your session has expired. Please sign in again.');
+                    signOut();
+                    return;
+                }
+                const admins = await res.json();
+                if (!res.ok || !Array.isArray(admins)) throw new Error('bad response');
+
+                $('admin-count').textContent = admins.length === 1 ? '1 account' : `${admins.length} accounts`;
+
+                body.innerHTML = admins.map(a => {
+                    const canReset = isSuper || a.username === myName;
+                    return `
+                        <tr class="entry">
+                            <td data-label="S. No.">${esc(a.s_no)}</td>
+                            <td class="who" data-label="Username">
+                                <b>${esc(a.username)}</b>
+                                ${a.is_super ? '<span class="badge badge-super">Super Admin</span>' : ''}
+                                ${a.username === myName ? '<span class="muted">(you)</span>' : ''}
+                            </td>
+                            <td class="mail" data-label="Email">${esc(a.email)}</td>
+                            <td class="pw" data-label="Password status"><span class="pw-mask">${esc(a.password)}</span></td>
+                            <td class="actions" data-label="Action">
+                                ${canReset
+                                    ? `<button type="button" class="btn btn-warning btn-sm" data-reset="${esc(a.username)}">Reset password</button>`
+                                    : '<span class="muted">Super Admin only</span>'}
+                            </td>
+                        </tr>`;
+                }).join('');
+            } catch (err) {
+                body.innerHTML = '<tr class="state-row"><td colspan="5">Could not load admin accounts. Check that the server is running and reload the page.</td></tr>';
+            }
+        }
+
+        // ---------- reset password ----------
+        let resetTarget = '';
+
+        function openReset(username) {
+            resetTarget = username;
+            $('reset-user').textContent = username;
+            $('reset-msg').textContent = '';
+            $('copy-msg').textContent = '';
+            $('reset-step-confirm').classList.remove('hidden');
+            $('reset-step-link').classList.add('hidden');
+            $('reset-generate').disabled = false;
+            showOverlay('reset-overlay', 'reset-generate');
+        }
+
+        async function generateResetLink() {
+            const btn = $('reset-generate');
+            btn.disabled = true;
+            $('reset-msg').textContent = '';
+
+            try {
+                const res = await fetch('/api/admin/send-reset-link', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, username: resetTarget })
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    $('reset-msg').textContent = data.message || 'Failed to generate the reset link.';
+                    btn.disabled = false;
+                    return;
+                }
+
+                $('reset-user-2').textContent = resetTarget;
+                $('reset-minutes').textContent = data.expires_in_minutes || 30;
+                $('reset-link').value = data.reset_link;
+                $('reset-open').href = data.reset_link;
+                $('reset-step-confirm').classList.add('hidden');
+                $('reset-step-link').classList.remove('hidden');
+                $('reset-copy').focus();
+            } catch (err) {
+                $('reset-msg').textContent = 'Could not reach the server.';
+                btn.disabled = false;
+            }
+        }
+
+        // navigator.clipboard only exists on https or localhost, so fall back to a selection copy
+        async function copyText(text, input) {
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                }
+            } catch (err) { /* fall through */ }
+            input.focus();
+            input.select();
+            try { return document.execCommand('copy'); } catch (err) { return false; }
+        }
+
+        async function copyResetLink() {
+            const ok = await copyText($('reset-link').value, $('reset-link'));
+            const msg = $('copy-msg');
+            msg.className = ok ? 'msg ok' : 'msg err';
+            msg.textContent = ok ? 'Link copied.' : 'Could not copy automatically. Select the link and copy it.';
+        }
+
+        // ---------- wiring ----------
+        if (!token) {
+            window.location.replace('/login');
+        } else {
+            $('logged-user-label').textContent = `Logged in as: ${myName}${isSuper ? ' (Super Admin)' : ''}`;
+            if (isSuper) $('open-create-btn').classList.remove('hidden');
+
+            $('logout-btn').addEventListener('click', signOut);
+            $('open-create-btn').addEventListener('click', () => showOverlay('create-overlay', 'newUsername'));
+            $('create-cancel').addEventListener('click', closeCreate);
+            $('create-form').addEventListener('submit', createNewAdmin);
+
+            $('admin-tbody').addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-reset]');
+                if (btn) openReset(btn.dataset.reset);
+            });
+            $('reset-cancel').addEventListener('click', () => hideOverlay('reset-overlay'));
+            $('reset-done').addEventListener('click', () => hideOverlay('reset-overlay'));
+            $('reset-generate').addEventListener('click', generateResetLink);
+            $('reset-copy').addEventListener('click', copyResetLink);
+
+            fetchAdminUsers();
+        }
+    </script>
+</body>
+
+</html>
