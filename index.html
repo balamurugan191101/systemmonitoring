@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Admin Login - Workstations Activity Portal</title>
+    <style>
+        :root {
+            --font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+            --gutter: clamp(20px, 3vw, 40px);
+
+            --bg: #eef1f5;
+            --surface: #ffffff;
+            --surface-2: #f6f8fa;
+            --ink: #14212b;
+            --muted: #5a6a78;
+            --line: #dbe1e8;
+
+            --topbar: #0f4c5c;
+            --brand: #0f4c5c;
+            --accent-text: #0f4c5c;
+            --focus: #2563eb;
+
+            --error-ink: #b42318;
+            --error-soft: #fdecea;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0e161d;
+                --surface: #152029;
+                --surface-2: #192632;
+                --ink: #e6edf3;
+                --muted: #93a4b3;
+                --line: #243441;
+
+                --topbar: #11303a;
+                --brand: #23798c;
+                --accent-text: #7cc8db;
+                --focus: #6ea8ff;
+
+                --error-ink: #f4a5a0;
+                --error-soft: #3a1f1e;
+            }
+        }
+
+        * { box-sizing: border-box; }
+        html { -webkit-text-size-adjust: 100%; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+            color: var(--ink);
+            font: 15px/1.5 var(--font);
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--focus);
+            outline-offset: 2px;
+        }
+
+        [hidden] { display: none !important; }
+
+        .topbar { background: var(--topbar); color: #fff; width: 100%; }
+
+        .topbar-inner {
+            padding: 12px var(--gutter);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .topbar-inner svg { width: 22px; height: 22px; flex: none; }
+
+        main {
+            flex: 1;
+            display: grid;
+            place-items: center;
+            padding: 32px var(--gutter);
+        }
+
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 28px;
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            font-size: 1.5rem;
+            line-height: 1.2;
+            font-weight: 650;
+            letter-spacing: -.01em;
+        }
+
+        .lead { margin: 0 0 22px; color: var(--muted); }
+
+        .field { margin-bottom: 16px; }
+        .field label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; }
+
+        .input-row { position: relative; }
+
+        .input-row input {
+            width: 100%;
+            padding: 10px 12px;
+            font: inherit;
+            color: var(--ink);
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+        }
+
+        .input-row input.has-toggle { padding-right: 64px; }
+        .input-row input:focus-visible { outline-offset: 0; border-color: var(--focus); }
+
+        .toggle {
+            position: absolute;
+            top: 50%;
+            right: 6px;
+            transform: translateY(-50%);
+            padding: 4px 10px;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent-text);
+            background: transparent;
+            border: 0;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .error {
+            margin: 0 0 16px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: var(--error-soft);
+            color: var(--error-ink);
+            font-size: 14px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 11px 16px;
+            font: inherit;
+            font-weight: 600;
+            color: #fff;
+            background: var(--brand);
+            border: 0;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn:hover { filter: brightness(1.12); }
+        .btn:disabled { opacity: .6; cursor: not-allowed; filter: none; }
+
+        .help {
+            margin: 18px 0 0;
+            padding-top: 16px;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        @media (max-width: 480px) {
+            .card { padding: 22px 20px; }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 12h4l2.5-6 4 12 2.5-6H21" />
+            </svg>
+            <span>Workstation Activity Portal</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="card">
+            <h1>Admin login</h1>
+            <p class="lead">Sign in to view workstation activity and manage administrators.</p>
+
+            <form id="loginForm" novalidate>
+                <div id="errorMsg" class="error" role="alert" hidden></div>
+
+                <div class="field">
+                    <label for="username">Username</label>
+                    <div class="input-row">
+                        <input type="text" id="username" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="password">Password</label>
+                    <div class="input-row">
+                        <input type="password" id="password" class="has-toggle" autocomplete="current-password" required>
+                        <button type="button" class="toggle" id="toggle-pw" aria-pressed="false">Show</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="submit-btn">Login</button>
+            </form>
+
+            <p class="help">Forgot your password? Ask a Super Admin to send you a password reset link.</p>
+        </div>
+    </main>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+
+        function showError(message) {
+            const box = $('errorMsg');
+            box.textContent = message;
+            box.hidden = !message;
+        }
+
+        $('toggle-pw').addEventListener('click', () => {
+            const reveal = $('password').type === 'password';
+            $('password').type = reveal ? 'text' : 'password';
+            $('toggle-pw').textContent = reveal ? 'Hide' : 'Show';
+            $('toggle-pw').setAttribute('aria-pressed', String(reveal));
+        });
+
+        $('loginForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            showError('');
+
+            const username = $('username').value.trim();
+            const password = $('password').value;
+
+            if (!username || !password) {
+                showError('Enter your username and password.');
+                (username ? $('password') : $('username')).focus();
+                return;
+            }
+
+            const btn = $('submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+
+            try {
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    localStorage.setItem('adminToken', data.token);
+                    localStorage.setItem('isSuperAdmin', data.is_super_admin);
+                    localStorage.setItem('adminUsername', data.username);
+                    window.location.href = '/admin';
+                    return;
+                }
+
+                showError(data.message || 'Invalid username or password.');
+                $('password').value = '';
+                $('password').focus();
+            } catch (err) {
+                showError("We couldn't reach the server. Check your connection and try again.");
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Login';
+        });
+
+        $('username').focus();
+    </script>
+</body>
+
+</html>
